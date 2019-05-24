@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [ -z "${1-}" ] || [ -z "${2-}" ]; then
+    echo "$0: Must specify a version, e.g. /L/python 3.6" >&2
+    exit 1
+fi
+
+if ! dpkg -l "python${1}"; then
+    if ! (apt-get update && apt-get install -y "python${1}"); then
+        echo "$0: Failed to apt-get python${1}" >&2
+        exit 1
+    fi
+fi
+
+if [ -e "${2##.lgtm}/config" ] 2>/dev/null; then
+    if ! /L/config "${2##.lgtm}/config"; then
+        echo "Failed to process config file; exiting." >&2
+        exit 1
+    fi
+fi
+
+[ -n "${LGTMRUN-}" ] && exec "${LGTMRUN}"
+
+exec "${LGTMEXE-python${1}}" "$2"

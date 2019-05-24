@@ -1,0 +1,9 @@
+#!/bin/bash -ue
+
+if [ ! -e "$1" ]; then
+    # No config is a perfectly valid state for us.
+    exit 0
+fi
+
+# TODO: massively improve this.
+source "$1"
