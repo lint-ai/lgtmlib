@@ -22,7 +22,7 @@ if {[catch {
       exit 1
     }
   }
-}] } {
+} reason] } {
   send_user "Failed stamp: $reason.\n"
   exit 2
 }
