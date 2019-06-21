@@ -1,6 +1,24 @@
-#!/bin/bash -ue
+#!/bin/bash -uxe
 
 # Tiny wrapper for apt so we only `apt update` once.
-[ ! -f /tmp/.aptupdate ] && apt update >/dev/null 2>&1
 
-DEBIAN_FRONTEND=noninteractive apt "$@"
+# Upon failure, dump stdout/stderr to the appropriate streams
+function fail() {
+  cat "$OUTTMP" </dev/null
+  cat "$ERRTMP" </dev/null >&2
+  echo "Failed to apt-ish $ARGSSTAR: $1" >&2
+  exit "${1:-1}"
+}
+
+OUTTMP="$(mktemp)"
+ERRTMP="$(mktemp)"
+ARGSSTAR="$*"
+
+exec >"$OUTTMP" 2>"$ERRTMP"
+if [ ! -f /tmp/.aptupdate ]; then
+   apt update || fail $?
+fi
+
+DEBIAN_FRONTEND=noninteractive apt "$@" || fail $?
+
+echo "apt-ish SUCCESS: $ARGSSTAR" >&2
