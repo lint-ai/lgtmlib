@@ -1,6 +1,6 @@
 #!/bin/bash -ue
 
-# Tiny wrapper for apt-get so we only `apt-get update` once.
-[ ! -f /tmp/.aptupdate ] && apt-get update
+# Tiny wrapper for apt so we only `apt update` once.
+[ ! -f /tmp/.aptupdate ] && apt update >/dev/null 2>&1
 
-DEBIAN_FRONTEND=noninteractive apt-get "$@"
+DEBIAN_FRONTEND=noninteractive apt "$@"
