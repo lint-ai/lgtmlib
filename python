@@ -1,24 +1,21 @@
-#!/bin/bash
+#!/bin/bash -ue
 
-if [ -z "${1-}" ] || [ -z "${2-}" ]; then
-    echo "$0: Must specify a version, e.g. /L/python 3.6" >&2
+if [ ${#@} -lt 2 ] || [ -z "${1-}" ] || [ -z "${2-}" ]; then
+    echo "$0: Must specify a version." >&2
+    echo "  In a shebang: #!/L/python 3.8" >&2
+    echo "  Directly: /L/python 3.8 -m json.tool" >&2
     exit 1
 fi
 
-if ! dpkg -l "python${1}" >/dev/null 2>&1; then
-    if ! (apt-get update && apt-get install -y "python${1}") >/dev/null; then
-        echo "$0: Failed to apt-get python${1}" >&2
+PVER="python${1}"
+
+if ! dpkg -l "${PVER}" >/dev/null 2>&1; then
+    if ! (/L/apt-ish install -y "${PVER}") >/dev/null; then
+        echo "$0: Failed to apt-get ${PVER}" >&2
         exit 1
     fi
 fi
 
-if [ -e "${2##.lgtm}/config" ] 2>/dev/null; then
-    if ! /L/config "${2##.lgtm}/config"; then
-        echo "Failed to process config file; exiting." >&2
-        exit 1
-    fi
-fi
+shift
 
-[ -n "${LGTMRUN-}" ] && exec "${LGTMRUN}"
-
-exec "${LGTMEXE-python${1}}" "$2"
+"${PVER}" "$@"
