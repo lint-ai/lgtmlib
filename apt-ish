@@ -3,4 +3,4 @@
 # Tiny wrapper for apt-get so we only `apt-get update` once.
 [ ! -f /tmp/.aptupdate ] && apt-get update
 
-apt-get "$@"
+DEBIAN_FRONTEND=noninteractive apt-get "$@"
