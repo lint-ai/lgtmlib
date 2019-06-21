@@ -1,4 +1,4 @@
-#!/bin/bash -uxe
+#!/bin/bash -ue
 
 # Tiny wrapper for apt so we only `apt update` once.
 
