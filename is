@@ -1,0 +1,34 @@
+#!/bin/bash -ue
+
+PARENT="$(ps wwwwho command p ${PPID-$$})"
+
+function invalid() {
+    # Attempt to warn the operator of an error
+    MAYBE="${1}"
+    /L/verbs/comment <<EOF || echo "Failed to /verbs/comment." >&2
+## Configuration error
+The \`/L/only\` command was called with an invalid (or missing) type, \`${MAYBE}\`.
+Therefore, the script \`${PARENT}\` may not have run when
+it otherwise should have.  Please correct the error and try again.
+EOF
+    echo "Invalid or missing \`/L/only\` type, \`${MAYBE}\`." >&2
+}
+
+if [ ${#@} -lt 1 ]; then
+    invalid '<empty>'
+    exit 1  # Empty "only" means that no matter what we have, it isn't a match.
+fi
+
+while [ ${#@} -ne 0 ]; do
+    MAYBE="${1-}"
+    if [ "$MAYBE" != "PR" ] && [ "$MAYBE" != "COMMIT" ]; then
+        invalid "$MAYBE"
+        continue
+    elif [ "$MAYBE" = "$LGTM_TYPE" ]; then
+        # It's a match!
+        exit 0
+    fi
+done
+
+echo "DEBUG: $PARENT not run; A '$LGTM_TYPE' is just not its type." >&2
+exit 1
