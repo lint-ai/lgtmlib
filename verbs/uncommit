@@ -1,0 +1,28 @@
+#!/usr/bin/expect -f
+
+set socket_path "/mnt/ipc/lgtm.ipc"
+if { [file exists $socket_path] == 0 } {
+  send_user "Failed to find socket at `$socket_path`.\n"
+  exit 2
+}
+if {[catch {
+  spawn nc -U $socket_path
+  send "UNCOMMIT "
+  send [join $argv]
+  send "\n"
+  expect -re {
+    "^OK([ ]?.*)\n" {
+      send_user "Uncommitted."
+      exit 0
+    }
+    "^(NO|ERR)([ ]?.*)\n" {
+      send_user "Failed: "
+      send_user expect_out(0,buffer)
+      #send_user "\n"  # In buffer already.
+      exit 1
+    }
+  }
+} reason] } {
+  send_user "Failed uncommit: $reason.\n"
+  exit 2
+}
