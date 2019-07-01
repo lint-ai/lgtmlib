@@ -23,6 +23,6 @@ if {[catch {
     }
   }
 } reason] } {
-  send_user "Failed stamp: $reason.\n"
+  send_user "Failed unstamp: $reason.\n"
   exit 2
 }
