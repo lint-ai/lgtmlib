@@ -21,6 +21,7 @@ fi
 
 while [ ${#@} -ne 0 ]; do
     MAYBE="${1-}"
+    shift
     if [ "$MAYBE" != "PR" ] && [ "$MAYBE" != "COMMIT" ]; then
         invalid "$MAYBE"
         continue
