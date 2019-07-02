@@ -13,16 +13,22 @@ if {[catch {
   expect -re {
     "^OK NOSTAMP([ ]?.*)\n" {
       send_user "Not stamped."
+      close
+      wait -nowait
       exit 0
     }
     "^OK STAMP([ ]?.*)\n" {
       send_user "Stamped."
+      close
+      wait -nowait
       exit 1
     }
     "^(NO|ERR)([ ]?.*)\n" {
       send_user "Failed: "
       send_user expect_out(0,buffer)
       #send_user "\n"  # In buffer already.
+      close
+      wait -nowait
       exit 2
     }
   }

@@ -13,12 +13,16 @@ if {[catch {
   expect -re {
     "^OK([ ]?.*)\n" {
       send_user "Committed."
+      close
+      wait -nowait
       exit 0
     }
     "^(NO|ERR)([ ]?.*)\n" {
       send_user "Failed: "
       send_user expect_out(0,buffer)
       #send_user "\n"  # In buffer already.
+      close
+      wait -nowait
       exit 1
     }
   }
