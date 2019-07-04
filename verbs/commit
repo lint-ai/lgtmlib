@@ -1,3 +1,15 @@
 #!/bin/bash -ue
 
+if [ ${#@} -eq 0 ]; then
+    echo "Syntax: $0 <message>" >&2
+    echo "  Replace <message> with \`-\` to read message from STDIN." >&2
+    exit 1
+fi
+
+if [ ${#@} -eq 1 ] && [ "${1-}" = "-" ]; then
+    echo "$0: Reading commit message from stdin..." >&2
+    exec /L/verbs/commit64 "$(base64 -w 0)"
+    # ^exec, so this line is never reached.
+fi
+
 exec /L/verbs/commit64 "$(base64 -w 0 <<<"$*")"
