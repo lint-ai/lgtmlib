@@ -5,12 +5,14 @@ PARENT="$(ps wwwwho command p ${PPID-$$})"
 function invalid() {
     # Attempt to warn the operator of an error
     MAYBE="${1}"
-    /L/verbs/comment <<EOF || echo "Failed to /verbs/comment." >&2
+    if ! /L/verbs/comment <<EOF; then
 ## Configuration error
 The \`/L/only\` command was called with an invalid (or missing) type, \`${MAYBE}\`.
 Therefore, the script \`${PARENT}\` may not have run when
 it otherwise should have.  Please correct the error and try again.
 EOF
+        echo "$0: failed to comment for invalid arg ${MAYBE}." >&2
+    fi
     echo "Invalid or missing \`/L/only\` type, \`${MAYBE}\`." >&2
 }
 
@@ -31,5 +33,5 @@ while [ ${#@} -ne 0 ]; do
     fi
 done
 
-echo "DEBUG: $PARENT not run; A '$LGTM_TYPE' is just not its type." >&2
+echo "DEBUG: $PARENT not run; a '$LGTM_TYPE' is just not its type." >&2
 exit 1
