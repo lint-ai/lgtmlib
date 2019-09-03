@@ -49,11 +49,12 @@ def main() -> int:
     try:
         commit64(msg)
     except LGTMError as e:
-        if isinstance(e.message, bytes) and e.message.startswith((b"NO", b"NO ")):
-            print(e.message.decode("ascii", "xmlcharrefreplace"), file=sys.stderr)
+        e_msg = str(e)
+        if isinstance(e_msg, bytes) and e_msg.startswith((b"NO", b"NO ")):
+            print(e_msg.decode("ascii", "xmlcharrefreplace"), file=sys.stderr)
             return 3
-        if isinstance(e.message, bytes) and e.message.startswith((b"ERR", b"ERR ")):
-            print(e.message.decode("ascii", "xmlcharrefreplace"), file=sys.stderr)
+        if isinstance(e_msg, bytes) and e_msg.startswith((b"ERR", b"ERR ")):
+            print(e_msg.decode("ascii", "xmlcharrefreplace"), file=sys.stderr)
             return 4
         print(repr(e), file=sys.stderr)
         return 5
