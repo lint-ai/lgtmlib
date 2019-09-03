@@ -1,32 +1,65 @@
-#!/usr/bin/expect -f
+#!/L/python 3.6
+from lgtm.LGTMError import LGTMError
+from lgtm.LGTMSocket import LGTMSocket
+from typing import List
 
-set socket_path "/mnt/ipc/lgtm.ipc"
-if { [file exists $socket_path] == 0 } {
-  send_user "Failed to find socket at `$socket_path`.\n"
-  exit 2
-}
-if {[catch {
-  spawn nc -U $socket_path
-  send "COMMIT64 "
-  send [join $argv]
-  send "\n"
-  expect -re {
-    "^OK([ ]?.*)\n" {
-      send_user "Committed."
-      close
-      wait -nowait
-      exit 0
-    }
-    "^(NO|ERR)([ ]?.*)\n" {
-      send_user "Failed: "
-      send_user expect_out(0,buffer)
-      #send_user "\n"  # In buffer already.
-      close
-      wait -nowait
-      exit 1
-    }
-  }
-} reason] } {
-  send_user "Failed commit: $reason.\n"
-  exit 2
-}
+import base64
+import os
+import socket
+import sys
+
+
+def commit64(msg: bytes) -> bytes:
+    """
+    Use :param:`msg` as a git commit message, if there are any changes to the
+    repository at the end of the current run.
+
+    @returns The full `OK` message.  Otherwise, raises an LGTMError with the
+             server's response.
+    """
+    sock: socket.socket
+    with LGTMSocket() as sock:
+        sock.send(b"COMMIT64 %s\n" % base64.b64encode(msg))
+        r: List[bytes] = []
+        while True:
+            # Read response until newline
+            c: bytes = sock.recv(1)
+            if len(c) == 0 or not isinstance(c, bytes):
+                raise RuntimeError("Unclean remote socket shutdown by LGTM IPCd.")
+            r.append(c)
+            if c == b"\n":
+                break
+        response: bytes = b"".join(r)
+        if response == b"OK" or response.startswith(b"OK "):
+            return response
+        # ERR, NO, or just something from outer space.
+        raise LGTMError(response)
+
+
+def main() -> int:
+    if not sys.argv or len(sys.argv) != 1 or not sys.argv[0]:
+        print(
+            "COMMIT: A (single) b64-encoded commit message is required.",
+            file=sys.stderr,
+        )
+        return 2
+
+    msg: bytes = os.fsencode(sys.argv[0])
+
+    try:
+        commit64(msg)
+    except LGTMError as e:
+        if isinstance(e.message, bytes) and e.message.startswith((b"NO", b"NO ")):
+            print(e.message.decode("ascii", "xmlcharrefreplace"), file=sys.stderr)
+            return 3
+        if isinstance(e.message, bytes) and e.message.startswith((b"ERR", b"ERR ")):
+            print(e.message.decode("ascii", "xmlcharrefreplace"), file=sys.stderr)
+            return 4
+        print(repr(e), file=sys.stderr)
+        return 5
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
