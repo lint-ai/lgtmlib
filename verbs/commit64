@@ -37,14 +37,14 @@ def commit64(msg: bytes) -> bytes:
 
 
 def main() -> int:
-    if not sys.argv or len(sys.argv) != 1 or not sys.argv[0]:
+    if not sys.argv or len(sys.argv) != 2 or not sys.argv[1]:
         print(
-            "COMMIT: A (single) b64-encoded commit message is required.",
+            f"{sys.argv[0]}: A (single) b64-encoded commit message is required.",
             file=sys.stderr,
         )
         return 2
 
-    msg: bytes = os.fsencode(sys.argv[0])
+    msg: bytes = os.fsencode(sys.argv[1])
 
     try:
         commit64(msg)
