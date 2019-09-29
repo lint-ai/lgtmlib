@@ -3,7 +3,6 @@ from lgtm.LGTMError import LGTMError
 from lgtm.LGTMSocket import LGTMSocket
 from typing import List
 
-import base64
 import os
 import socket
 import sys
@@ -17,9 +16,12 @@ def commit64(msg: bytes) -> bytes:
     @returns The full `OK` message.  Otherwise, raises an LGTMError with the
              server's response.
     """
+    # Simple heuristic, but catches most of the silly mistakes.
+    if b' ' in msg or not isinstance(msg, bytes):
+        raise ValueError(f"Message {msg!r} is not valid b64.")
     sock: socket.socket
     with LGTMSocket() as sock:
-        sock.send(b"COMMIT64 %s\n" % base64.b64encode(msg))
+        sock.send(b"COMMIT64 %s\n")
         r: List[bytes] = []
         while True:
             # Read response until newline
