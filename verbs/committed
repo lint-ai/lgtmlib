@@ -20,7 +20,7 @@ def committed(msg: Optional[bytes]) -> bool:
     """
     sock: socket.socket
     with LGTMSocket() as sock:
-        sock.send(b"COMMITTED%s\n" % (b" " + msg) if msg else b"")
+        sock.send(b"COMMITTED%s\n" % ((b" " + msg) if msg else b""))
         r: List[bytes] = []
         while True:
             # Read response until newline
