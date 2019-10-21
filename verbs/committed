@@ -43,7 +43,7 @@ def committed(msg: Optional[bytes]) -> bool:
 
 
 def main() -> int:
-    if sys.argv or len(sys.argv) not in (1, 2):
+    if len(sys.argv) not in (1, 2):
         print(
             f"{sys.argv[0]}: At most a single string to follow the COMMITTED "
             "command is permitted.",
